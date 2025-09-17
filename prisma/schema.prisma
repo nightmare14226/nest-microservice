@@ -32,4 +32,14 @@ model User {
   hashedRt String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt @default(now())
+  articles Article[]
+  permission String @default("viewer")
+}
+
+model Article {
+  id Int @id @default(autoincrement())
+  title String
+  authorId Int
+  author User @relation(fields: [authorId], references: [id])
+  content String
 }

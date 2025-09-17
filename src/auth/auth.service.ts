@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
-import { UserService } from 'src/user/user.service';
+import { UserService } from '@/user/user.service';
 
 @Injectable()
 export class AuthService {
@@ -20,10 +20,9 @@ export class AuthService {
     }
 
     async login(user: any) {
-        const payload = { email: user.email, sub: user.id, role: user.role };
-        return {
-            access_token: this.jwtService.sign(payload, { expiresIn: process.env.JWT_EXPIRES_IN })
-        }
+        const { id, email, role } = user;
+        console.log((await this.getTokens(id, email, role)).access_token);
+        return this.getTokens(id, email, role);
     }
 
     async getTokens(userId: number, email: string, role: string) {
