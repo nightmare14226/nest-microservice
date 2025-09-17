@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "public"."User" ALTER COLUMN "hashedRt" DROP NOT NULL,
+ALTER COLUMN "hashedRt" SET DATA TYPE TEXT;
