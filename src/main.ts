@@ -5,7 +5,7 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.use('/webhook/stripe', bodyparser.raw({type: 'application/json'}));
+  app.use('/webhook', bodyparser.raw({type: 'application/json'}));
   
   await app.listen(process.env.PORT ?? 3000);
 }
