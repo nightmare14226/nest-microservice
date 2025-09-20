@@ -21,6 +21,8 @@ model Product {
   stock Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt @default(now())
+  cartItems CartItem[]
+  orderItems OrderItem[]
 }
 
 model User {
@@ -33,6 +35,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt @default(now())
   articles Article[]
+  cartItems CartItem[]
+  orders Order[]
   permission String @default("viewer")
 }
 
@@ -42,4 +46,32 @@ model Article {
   authorId Int
   author User @relation(fields: [authorId], references: [id])
   content String
+}
+
+model CartItem {
+  id Int @id @default(autoincrement())
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+  productId Int
+  product Product @relation(fields: [productId], references: [id])
+  quantity Int
+}
+
+model OrderItem {
+  id Int @id @default(autoincrement())
+  orderId Int
+  order Order @relation(fields: [orderId], references: [id])
+  productId Int
+  product Product @relation(fields: [productId], references: [id])
+  quantity Int
+  price Float
+}
+
+model Order {
+  id Int @id @default(autoincrement())
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+  item OrderItem[]
+  total Float
+  created DateTime @default(now())
 }
