@@ -1,12 +1,18 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Res } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { type Response } from 'express';
 import * as bcrypt from 'bcrypt';
 
 import { UserService } from '@/user/user.service';
+import { RedisService } from '@/redis/redis.service';
 
 @Injectable()
 export class AuthService {
-    constructor(private userService: UserService, private jwtService: JwtService) { }
+    constructor(
+        private userService: UserService,
+        private jwtService: JwtService,
+        private redisService: RedisService
+    ) { }
 
     async validateUser(email: string, pass: string) {
         const user = await this.userService.findByEmail(email);
@@ -19,9 +25,11 @@ export class AuthService {
         return null;
     }
 
-    async login(user: any) {
+    async login(user: any, @Res() res: Response) {
         const { id, email, role } = user;
-        console.log((await this.getTokens(id, email, role)).access_token);
+        const saved = await this.storeSession(id, email, role, res);
+        
+        if(!saved) throw new Error("Bad Session.");
         return this.getTokens(id, email, role);
     }
 
@@ -35,9 +43,21 @@ export class AuthService {
 
     async refreshTokens(userId: number, refreshToken: string) {
         const user = await this.userService.findById(userId);
-        if(!user || !user.hashedRt) throw new UnauthorizedException();
+        if (!user || !user.hashedRt) throw new UnauthorizedException();
         const match = await bcrypt.compare(refreshToken, user.hashedRt);
-        if(!match) throw new UnauthorizedException();
+        if (!match) throw new UnauthorizedException();
         return this.getTokens(userId, user.email, user.role);
+    }
+
+    async storeSession(userId: number, email: string, role: string, @Res() res: Response) {
+        const sessionId = this.redisService.generateSessionId();
+        const sessionKey = `sess:${sessionId}`;
+        const userInfo = { userId, email, role };
+        const saved = await this.redisService.storeSessionId(sessionKey, userInfo);
+
+        if(!saved) throw new Error("Bad Session.");
+
+        res.cookie('sessionId', sessionId, { httpOnly: true, secure: true, maxAge: 3600 * 1000});
+        return saved;
     }
 }

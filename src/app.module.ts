@@ -15,6 +15,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path'
 import { PaymentModule } from './webhook/webhook.module';
 import { StripeModule } from './stripe/stripe.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -31,7 +32,8 @@ import { StripeModule } from './stripe/stripe.module';
       playground: true
     }),
     PaymentModule,
-    StripeModule
+    StripeModule,
+    RedisModule
   ],
   controllers: [AppController],
   providers: [AppService],
